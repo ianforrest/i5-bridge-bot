@@ -4,6 +4,7 @@ require('dotenv').config();
 const { resolve } = require('path');
 const accessCode = process.env.ACCESS_CODE;
 const url = "http://www.wsdot.wa.gov/Traffic/api/HighwayAlerts/HighwayAlertsREST.svc/GetAlertsAsJson?AccessCode="+accessCode;
+var tweet = require('./twitter')
 
 const server = http.createServer((req, res) => {
   res.statusCode = 200
@@ -75,7 +76,7 @@ const apiCall = () => {
 }
 
 // Every 70 seconds, check the data living in bridgeData. If bridge data length
-// is more than one, then trigger action. If action is triggered, stop this timer.
+// is more than zero, then trigger action. If action is triggered, stop this timer.
 
 function bridgeTimer () {
   bridgeTimer = setInterval(bridgeUpCheck, 70100);
@@ -98,6 +99,7 @@ const bridgeUpAction = () => {
   );
   var date = new Date(getStartTime).toLocaleTimeString();
   console.log("Bridge is up starting at " + date);
+  tweet();
   bridgeDownTimer();
 
 }
@@ -110,6 +112,7 @@ const bridgeDownCheck = () => {
   if (bridgeData.length >= 1) {
     console.log("Bridge is still up.")
   } else {
+    clearInterval(bridgeDownTimer);
     bridgeTimer();
   }
 }
